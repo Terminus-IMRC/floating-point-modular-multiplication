@@ -1,0 +1,113 @@
+on: push
+
+jobs:
+
+  run-tests-x86-64:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        uarch: [skylake-avx512, cascadelake, icelake-server, sapphirerapids, znver4]
+        cxx-compiler: [g++, clang++, icpx]
+        build-type: [Debug, Release]
+        include:
+          - cxx-compiler: g++
+            cxx-flags: -O2
+          - cxx-compiler: clang++
+            cxx-flags: -O2
+          - cxx-compiler: icpx
+            cxx-flags: -O2 -fp-model precise
+    defaults:
+      run:
+        shell: bash --noprofile --norc -euxo pipefail {0}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - name: Build and run tests
+        uses: devcontainers/ci@v0.3
+        with:
+          configFile: .devcontainer/development-x86-64/devcontainer.json
+          runCmd: |
+            source /opt/intel/oneapi/setvars.sh
+            cmake . \
+              -D CMAKE_CXX_COMPILER='${{ matrix.cxx-compiler }}' \
+              -D CMAKE_CXX_FLAGS='${{ matrix.cxx-flags }}' \
+              -D CMAKE_EXE_LINKER_FLAGS='-static' \
+              -D CMAKE_BUILD_TYPE='${{ matrix.build-type }}' \
+              -D TARGET_UARCH='${{ matrix.uarch }}'
+            cmake --build . -v
+            if [ '${{ matrix.build-type }}' = Debug ]; then
+              /opt/sde/sde64 -future -- ./bench_repeated_multiplications
+            fi
+            cp -v bench_repeated_multiplications 'bench_repeated_multiplications-${{ matrix.uarch }}-${{ matrix.cxx-compiler }}-${{ matrix.build-type }}'
+      - name: Upload executables
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: floating-point-modmul-${{ matrix.uarch }}-${{ matrix.cxx-compiler }}-${{ matrix.build-type }}
+          path: bench_repeated_multiplications-${{ matrix.uarch }}-${{ matrix.cxx-compiler }}-${{ matrix.build-type }}
+  
+  run-tests-aarch64:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        uarch: [neoverse-v1, neoverse-v2, a64fx]
+        cxx-compiler: [aarch64-linux-gnu-g++, clang++]
+        build-type: [Debug, Release]
+        include:
+          - cxx-compiler: aarch64-linux-gnu-g++
+            cxx-flags: -O2
+          - cxx-compiler: clang++
+            cxx-flags: -O2 -target aarch64-linux-gnu
+          - uarch: neoverse-v1
+            sve-vector-bits: 256
+          - uarcj: neoverse-v2
+            sve-vector-bits: 128
+          - uarch: a64fx
+            sve-vector-bits: 512
+    defaults:
+      run:
+        shell: bash --noprofile --norc -euxo pipefail {0}
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - name: Build and run tests
+        uses: devcontainers/ci@v0.3
+        with:
+          configFile: .devcontainer/development-aarch64-cross/devcontainer.json
+          runCmd: |
+            cmake . \
+              -D CMAKE_SYSTEM_NAME=Linux \
+              -D CMAKE_SYSTEM_PROCESSOR=aarch64 \
+              -D CMAKE_CXX_COMPILER='${{ matrix.cxx-compiler }}' \
+              -D CMAKE_CXX_FLAGS='${{ matrix.cxx-flags }}' \
+              -D CMAKE_EXE_LINKER_FLAGS='-static' \
+              -D CMAKE_BUILD_TYPE='${{ matrix.build-type }}' \
+              -D TARGET_UARCH='${{ matrix.uarch }}' \
+              -D SVE_VECTOR_BITS='${{ matrix.sve-vector-bits }}'
+            cmake --build . -v
+            if [ '${{ matrix.build-type }}' = Debug ]; then
+              qemu-aarch64 -cpu 'max,sve${{ matrix.sve-vector-bits }}=on' ./bench_repeated_multiplications
+            fi
+            cp -v bench_repeated_multiplications 'bench_repeated_multiplications-${{ matrix.uarch }}-${{ matrix.cxx-compiler }}-${{ matrix.build-type }}'
+      - name: Upload executables
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: floating-point-modmul-${{ matrix.uarch }}-${{ matrix.cxx-compiler }}-${{ matrix.build-type }}
+          path: bench_repeated_multiplications-${{ matrix.uarch }}-${{ matrix.cxx-compiler }}-${{ matrix.build-type }}
+
+  merge-artifacts:
+    runs-on: ubuntu-latest
+    needs: [run-tests-x86-64, run-tests-aarch64]
+    steps:
+      - name: Merge artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          delete-merged: true
+          name: floating-point-modmul

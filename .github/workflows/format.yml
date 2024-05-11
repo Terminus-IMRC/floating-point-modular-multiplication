@@ -1,0 +1,27 @@
+on: push
+
+jobs:
+
+  format-files:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash --noprofile --norc -euxo pipefail {0}
+    steps:
+      - name: Install required packages
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --upgrade --yes \
+            clang-format \
+            cmake-format
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - name: Format files
+        run: |
+          git ls-files CMakeLists.txt | xargs cmake-format --log-level debug --in-place
+          git ls-files '*.cpp' '*.hpp' | xargs clang-format --verbose -i
+          git diff --exit-code

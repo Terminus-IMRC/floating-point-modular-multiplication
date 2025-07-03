@@ -1,8 +1,10 @@
 # [floating-point-modular-multiplication](https://github.com/Terminus-IMRC/floating-point-modular-multiplication)
 
 This repository offers the source code for the paper <cite>Improved Modular
-Multiplication Algorithms Using Solely IEEE 754 Floating-Point Operations</cite>
-by Yukimasa Sugizaki and Daisuke Takahashi (under review as of August 2024).
+Multiplication Algorithms Using Solely IEEE 754 Binary Floating-Point
+Operations</cite> by Yukimasa Sugizaki and Daisuke Takahashi (IEEE Transactions
+on Emerging Topics on Computing, 2025,
+doi:[10.1109/TETC.2025.3582551](https://doi.org/10.1109/TETC.2025.3582551)).
 In particular, it contains the source code for the conventional and the proposed
 modular multiplication algorithms using integer and floating-point operations.
 It also provides the source code for the benchmark that compares the performance

@@ -56,7 +56,7 @@ the Fujitsu A64FX processor):
 
 | CMake option | Description |
 | --- | --- |
-| `TARGET_UARCH` | Target microarchitecture. Examples: <ul> <li>`skylake-avx512`: Intel Skylake (server)</li> <li>`cascadelake`: Intel Cascade Lake</li> <li>`icelake-server`: Intel Ice Lake (server)</li> <li>`sapphirerapids`: Intel Sapphire Rapids</li> <li>`znver4`: AMD Zen 4</li> <li>`neoverse-v1`: Arm Neoverse V1</li> <li>`neoverse-v2`: Arm Neoverse V2</li> <li>`neoverse-v3`: Arm Neoverse V3</li> <li>`a64fx`: Fujitsu A64FX</li> </ul> |
+| `TARGET_UARCH` | Target microarchitecture. Examples: <ul> <li>`skylake-avx512`: Intel Skylake (server)</li> <li>`cascadelake`: Intel Cascade Lake</li> <li>`icelake-server`: Intel Ice Lake (server)</li> <li>`sapphirerapids`: Intel Sapphire Rapids</li> <li>`znver4`: AMD Zen 4</li> <li>`neoverse-v1`: Arm Neoverse V1 (AWS Graviton3/3E)</li> <li>`neoverse-v2`: Arm Neoverse V2 (NVIDIA Grace, AWS Graviton4, Azure Cobalt 100, Google Axion)</li> <li>`a64fx`: Fujitsu A64FX</li> </ul> |
 | `SVE_VECTOR_BITS` (Arm only) | Vector width (in bits) for the SVE instruction set. In the examples above, specify `128` for Neoverse V2 and V3, `256` for Neoverse V1, and `512` for A64FX. |
 
 For statically-linked and cross-architecture builds, refer to the examples in

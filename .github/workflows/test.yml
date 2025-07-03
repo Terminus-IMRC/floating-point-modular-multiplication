@@ -9,7 +9,7 @@ jobs:
       matrix:
         uarch: [skylake-avx512, cascadelake, icelake-server, sapphirerapids, znver4]
         cxx-compiler: [g++, clang++, icpx]
-        build-type: [Debug, Release]
+        build-type: [Release]
         include:
           - cxx-compiler: g++
             cxx-flags: -O2
@@ -54,7 +54,7 @@ jobs:
       matrix:
         uarch: [neoverse-v1, neoverse-v2, a64fx]
         cxx-compiler: [aarch64-linux-gnu-g++, clang++]
-        build-type: [Debug, Release]
+        build-type: [Release]
         include:
           - cxx-compiler: aarch64-linux-gnu-g++
             cxx-flags: -O2

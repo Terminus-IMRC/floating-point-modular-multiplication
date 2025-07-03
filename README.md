@@ -61,7 +61,7 @@ the Fujitsu A64FX processor):
 
 For statically-linked and cross-architecture builds, refer to the examples in
 the GitHub Actions workflow file:
-[.github/workflows/main.yml](.github/workflows/main.yml).
+[.github/workflows/test.yml](.github/workflows/test.yml).
 
 
 ## License and contribution
